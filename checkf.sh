@@ -3,21 +3,22 @@ init_dir=$(pwd)
 size=$1
 run=1
 while [[ run -eq 1 ]] ; do
-	echo "You'll check files bigger than $size bytes , sure ? (Y/N)"
+	echo "You'll check files bigger than $size kB , sure ? (Y/N)"
 	read input1
 	if [ $input1 == "y" -o $input1 == "Y" ]; then
-		echo "The process will look for files bigger than $size bytes"
+		echo "The process will look for files bigger than $size kB"
 		run=0
 	else
-		echo "Enter the new file size to check (bytes)"
+		echo "Enter the new file size to check (kyloBytes)"
 		read input2
 		size=$input2
 	fi
 done
 if [ -z "$2" ]; then
-	echo "You didn't entered any target directory, do you want to search into your whole computer ? (Y/N)"
+	echo "You didn't entered any target directory, do you want to search all users files ? (Y/N)"
 	read input3
 	if [ $input3 == "y" -o $input3 == "Y" ]; then
+		init_dir="/mnt/c/Users"
 		echo "The process will store the files location into $init_dir/bigf.txt , it may take a while"
 	else
 		exit 1
@@ -29,7 +30,7 @@ fi
 function store_data(){
 	working_dir="$1"
 	cd "$init_dir"
-	echo "FILE SIZE : $3 | LOCATION : $1/$2" >> bigf.txt
+	echo "FILE SIZE : ${3:0:-3} kB | LOCATION : $1/$2" >> bigf.txt
 	cd "$working_dir"
 }
 function rep_recur(){
@@ -37,7 +38,7 @@ function rep_recur(){
 	for file in .* *; do
 		if [ ! -d "${file}" -a "${file}" != "*" ]; then
 			weight=$(stat -c%s "$file")
-		        if [[ weight -gt size ]]; then
+		        if [[ weight -gt 1000*size ]]; then
 				store_data "$current_dir" "${file}" "$weight"	
 			fi
 		elif [ -d "${file}" -a "${file}" != "." -a "${file}" != ".." ]; then
@@ -49,6 +50,6 @@ function rep_recur(){
 	done
 }
 cd "$init_dir"
-echo "List of files of a size above $size bytes found" > bigf.txt
+echo "List of files of a size above $size kB found" > bigf.txt
 rep_recur
 exit 1
